@@ -18,11 +18,16 @@
  *
  */
 
-// const HDWalletProvider = require('@truffle/hdwallet-provider');
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 // const infuraKey = "fj4jll3k.....";
 //
 // const fs = require('fs');
 // const mnemonic = fs.readFileSync(".secret").toString().trim();
+
+let mnemonic = "gather pull rely offer degree empty city deposit armed defy invest enrich"
+let pkey = "0x2bce2d76694b8569637c9a1c30f686a8267917675c5e8430978736bc5868d846"
+let address = "0x2f89e6745b7DF130A141C12023BBDF3860eaec2b"
+
 
 module.exports = {
   /**
@@ -47,6 +52,11 @@ module.exports = {
 		port: 8545,            // Standard Ethereum port (default: none)
 		network_id: "*",       // Any network (default: none)
     },
+    production: {
+		provider: new HDWalletProvider({mnemonic: mnemonic, providerOrUrl: "http://rpc.kitcoin.info", addressIndex: 0}),
+		from: address,
+		network_id: "*", // Match any network id
+    }
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port

@@ -1,10 +1,10 @@
-// contracts/CloutMessages.sol
+// contracts/Messages.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "./CloutProfile.sol";
-import "./CloutMessages.sol";
+import "./Profile.sol";
+import "./Messages.sol";
 
 contract InteractionTips {
 	using SafeMath for uint256;
@@ -50,7 +50,7 @@ contract InteractionTips {
 	{
 		require ( msg.value > 0 , "Not enough tip sent");
 		//check that message allows tips should be done at interface level as it's gas consuming to check array of plugins
-		CloutMessages msgs = CloutMessages(_messagesContract);
+		Messages msgs = Messages(_messagesContract);
 
 		uint256 creatorTip = msg.value.mul(_feeCreatorInHundredthPercents).div(10000);
 		uint256 ownerShare = uint256(10000).sub(_feeCreatorInHundredthPercents).sub(_feeTippingInHundredthPercents);
@@ -71,7 +71,7 @@ contract InteractionTips {
 	function forwardTip(address payable profileAddress, uint256 tipValue)
 		private
 	{
-		CloutProfile cp = CloutProfile(profileAddress);
+		Profile cp = Profile(profileAddress);
 
 		cp.receivePaymentAndShareDividends{value: tipValue}();
 

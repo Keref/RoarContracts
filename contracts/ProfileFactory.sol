@@ -1,20 +1,23 @@
-// contracts/CloutProfileFactory.sol
+// contracts/ProfileFactory.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./CloutProfile.sol";
+import "./Profile.sol";
 
-contract CloutProfileFactory {
+contract ProfileFactory {
     event ProfileCreated(address payable profileAddress);
+	//Change name event
+	event ProfileRenamed(string oldName, string newName);
 
 	//Registered profiles by name
 	mapping (string => address payable) public profiles;
 	
 	
+	
     function deployNewProfile(string memory name) public returns (address profileAddress) {
 		require ( profiles[name] == payable(0) );
 		
-        CloutProfile cp = new CloutProfile(name, msg.sender);
+        Profile cp = new Profile(name, msg.sender, address(this));
 		profiles[name] = payable(cp);
         emit ProfileCreated(payable(cp));
 		return payable(cp);
@@ -35,8 +38,10 @@ contract CloutProfileFactory {
 		profiles[newName] = profiles[oldName];
 		profiles[oldName] = payable(0);
 		
-		CloutProfile cp = CloutProfile(profiles[newName]);
+		Profile cp = Profile(profiles[newName]);
 		cp.setProfileName(newName);
+		
+		emit ProfileRenamed(oldName, newName);
 		
 		return newName;
 	}

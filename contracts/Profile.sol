@@ -1,11 +1,11 @@
-// contracts/CloutProfile.sol
+// contracts/Profile.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract CloutProfile is ERC20 {
+contract Profile is ERC20 {
 	using SafeMath for uint256;
 	
 	//Owner
@@ -26,19 +26,27 @@ contract CloutProfile is ERC20 {
 	//Lifetime dividends
 	uint256 public lifetimeDividends = 0;
 	
+	address factory;
+	
 	event ReceivedPayment(uint256 value, bool sharedDividends);
 	
 	event StockBought(uint256 value, uint256 amount, address buyer );
 	event StockSold(uint256 value, uint256 amount, address seller );
 	
+	//onlyOwner or factory 
+	modifier onlyOwnerOrFactory(){
+		require( owner == msg.sender || factory == msg.sender, "Unauthorized action" );
+		_;
+	}
 	modifier onlyOwner(){
 		require( owner == msg.sender, "Unauthorized action" );
 		_;
 	}
 
-    constructor(string memory _name, address _owner) 
+    constructor(string memory _name, address _owner, address _factory) 
 		ERC20(_name, _name)
 	{
+		factory = _factory;
 		owner = _owner;
 		username = _name;
     }
@@ -47,10 +55,11 @@ contract CloutProfile is ERC20 {
 	
 	/**
      * @dev Set the profile name.
+	 * Only owner or factory as a change of username needs to first be registered in the factory then propagated
      */
     function setProfileName(string memory _name) 
 		public 
-		onlyOwner
+		onlyOwnerOrFactory
 	{
 		username = _name;
     }
@@ -146,7 +155,9 @@ contract CloutProfile is ERC20 {
 		//supply^2 =  totalValue * 10^18 / ratio
 		uint256 afterSupplySquare = address(this).balance.mul(10**22).div(ratio);	
 
-		uint256 _amountBought = sqrt(afterSupplySquare);
+		uint256 afterSupply = sqrt(afterSupplySquare);
+		uint256 _amountBought = afterSupply.sub(beforeSupply);
+		
 		_mint(msg.sender, _amountBought);
 		
 		emit StockBought( buyerValue, _amountBought, msg.sender );

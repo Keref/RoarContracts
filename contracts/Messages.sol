@@ -1,15 +1,15 @@
-// contracts/CloutMessages.sol
+// contracts/Messages.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "./CloutProfile.sol";
+import "./Profile.sol";
 
 //import "./TypedMessage.sol";
 
-contract CloutMessages is ERC721 {
+contract Messages is ERC721 {
 
 	// Mapping from token ID to message Struct
 	mapping (string => address ) public _messageTypes;
@@ -22,7 +22,7 @@ contract CloutMessages is ERC721 {
 	// Mapping owner address to message list
 	mapping (address => uint256[] ) public profileMessages;
 	
-	CloutMsg[] public cloutMessages;
+	Msg[] public messages;
 	
     event MessagePublished(uint256 messageId);
     event CommentPublished(uint256 messageId, uint256 replyToId);
@@ -30,7 +30,7 @@ contract CloutMessages is ERC721 {
      * @dev Checks that message sender has a profile.
      */
 	modifier onlyRegisteredProfile(address payable profileAddress){
-		CloutProfile cp = CloutProfile(profileAddress);
+		Profile cp = Profile(profileAddress);
 		address pa = cp.owner();
 		require( pa == msg.sender, "Invalid Profile" );
 		_;
@@ -39,7 +39,7 @@ contract CloutMessages is ERC721 {
 	//default message interaction for all publications
 	string[] private _defaultMessageInteractions = ["like", "tips"];
 	
-	struct CloutMsg {
+	struct Msg {
 		bool isEditable;
 		bool isPrivate;
 		
@@ -57,7 +57,7 @@ contract CloutMessages is ERC721 {
 	
 	
 
-    constructor() ERC721("CloutMessages", "CMsg")
+    constructor() ERC721("Messages", "Msg")
 	{
 		//reserved types
 		//_messageTypes[ "tweet" ] = address()
@@ -69,21 +69,21 @@ contract CloutMessages is ERC721 {
 	
 	
 	/**
-     * @dev Creates a new ERC721 Typed CloutMessage.
+     * @dev Creates a new ERC721 Typed Message.
      */
 	function publishTypedMessage(address payable profileAddress, uint256 replyToId, string memory message, string memory messageType, string[] memory extra)
 		onlyRegisteredProfile(profileAddress)
 		public
 		returns (uint256 newMessageId)
 	{
-		CloutMsg memory p;
+		Msg memory p;
 		if ( replyToId > 0) p.replyToId = replyToId;
 		p.messageType = messageType;
 		p.message = message;
 		p.interactions = _defaultMessageInteractions;
 		
-		uint256 messageId = cloutMessages.length;
-		cloutMessages.push(p);
+		uint256 messageId = messages.length;
+		messages.push(p);
 		
 		//assign
 		_balances[profileAddress] += 1;
@@ -94,7 +94,7 @@ contract CloutMessages is ERC721 {
 		
 		//if replyToId then link comment in original message
 		if ( replyToId > 0 ){
-			cloutMessages[replyToId].comments.push(messageId);
+			messages[replyToId].comments.push(messageId);
 			emit CommentPublished(messageId, replyToId);
 		}
 		else 
@@ -105,7 +105,7 @@ contract CloutMessages is ERC721 {
 	
 	
 	/**
-     * @dev Creates a new ERC721 default CloutMessage.
+     * @dev Creates a new ERC721 default Message.
      */
 	function publishMessage(address payable profileAddress, uint256 replyToId, string memory message)
 		public
@@ -136,7 +136,7 @@ contract CloutMessages is ERC721 {
      */
     function totalSupply() external view returns (uint256)
 	{
-		return cloutMessages.length;
+		return messages.length;
 	}
 
 	
@@ -154,9 +154,9 @@ contract CloutMessages is ERC721 {
 			string[] memory interactions
 		)
 	{
-		CloutMsg memory p = cloutMessages[index];
+		Msg memory p = messages[index];
 		
-		CloutProfile cp = CloutProfile(owners[index]);
+		Profile cp = Profile(owners[index]);
 		string memory profileName = cp.username();
 		
 		return (index, profileName, p.message, p.replyToId, p.comments, p.interactions);
@@ -169,7 +169,7 @@ contract CloutMessages is ERC721 {
      */
     function getProfileMessages(address profile) 
 		external view 
-		returns (uint256[] memory messages )
+		returns (uint256[] memory profileMsg )
 	{
 		return profileMessages[profile];
 	}

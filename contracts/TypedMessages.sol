@@ -5,7 +5,7 @@ pragma solidity ^0.8.0;
 /**
  * Netclout can accept arbitrary message types
  */
-contract CloutTypedMessages {
+contract TypedMessages {
 	//Owner
 	address private _owner;
 	
